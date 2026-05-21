@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGNAL — News Intelligence on Rialo</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #05070E;
+  --s1:      #0B0F1A;
+  --s2:      #101520;
+  --s3:      #141922;
+  --border:  #1C2535;
+  --border2: #243045;
+  --blue:    #3D7EF5;
+  --green:   #16C784;
+  --red:     #E84040;
+  --amber:   #F5A623;
+  --purple:  #8B5CF6;
+  --cyan:    #06C8D4;
+  --white:   #E8EEFF;
+  --gray:    #3A4A60;
+  --gray2:   #607080;
+  --gray3:   #8A9BB0;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body {
+  background:var(--bg);
+  color:var(--white);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* grid bg */
+body::before {
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(61,126,245,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(61,126,245,.035) 1px,transparent 1px);
+  background-size:48px 48px;
+  pointer-events:none;z-index:0;
+}
+
+/* ── NAV ── */
+nav {
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 1.5rem;height:52px;
+  background:rgba(5,7,14,.92);
+  backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+}
+.logo {
+  font-family:'Syne',sans-serif;
+  font-weight:800;font-size:1.25rem;
+  letter-spacing:4px;color:var(--white);
+}
+.logo span{color:var(--blue);}
+.nav-center {
+  display:flex;align-items:center;gap:1.5rem;
+}
+.nav-tab {
+  font-family:'DM Mono',monospace;
+  font-size:.65rem;letter-spacing:1.5px;
+  color:var(--gray2);cursor:pointer;
+  padding:4px 0;border-bottom:1px solid transparent;
+  transition:all .2s;
+}
+.nav-tab.active{color:var(--blue);border-bottom-color:var(--blue);}
+.nav-tab:hover{color:var(--white);}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.rialo-badge {
+  font-family:'DM Mono',monospace;
+  font-size:.62rem;letter-spacing:1.5px;
+  color:var(--cyan);border:1px solid rgba(6,200,212,.25);
+  padding:3px 10px;border-radius:3px;
+}
+.live-ind {
+  display:flex;align-items:center;gap:5px;
+  font-family:'DM Mono',monospace;
+  font-size:.62rem;color:var(--green);
+}
+.live-ind::before {
+  content:'';width:5px;height:5px;border-radius:50%;
+  background:var(--green);box-shadow:0 0 8px var(--green);
+  animation:blink 1.4s ease infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* ── HERO ── */
+.hero {
+  position:relative;z-index:1;
+  padding:80px 1.5rem 32px;
+  max-width:1280px;margin:0 auto;
+}
+.hero-eyebrow {
+  font-family:'DM Mono',monospace;
+  font-size:.65rem;letter-spacing:3px;
+  color:var(--blue);margin-bottom:.8rem;
+  display:flex;align-items:center;gap:10px;
+}
+.hero-eyebrow::before{content:'';width:24px;height:1px;background:var(--blue);}
+.hero h1 {
+  font-family:'Syne',sans-serif;
+  font-size:clamp(1.8rem,4.5vw,3rem);
+  font-weight:800;line-height:1.15;
+  margin-bottom:.75rem;
+}
+.hero h1 em{font-style:normal;color:var(--blue);}
+.hero-sub {
+  font-size:.875rem;color:var(--gray3);
+  line-height:1.75;max-width:560px;margin-bottom:1.5rem;
+}
+.hero-kpis {
+  display:flex;gap:2.5rem;flex-wrap:wrap;
+}
+.kpi {font-family:'DM Mono',monospace;}
+.kpi-val{font-size:1.3rem;font-weight:500;color:var(--white);}
+.kpi-label{font-size:.6rem;color:var(--gray2);letter-spacing:1px;margin-top:2px;}
+
+/* ── LAYOUT ── */
+.app {
+  position:relative;z-index:1;
+  max-width:1280px;margin:0 auto;
+  padding:0 1.5rem 80px;
+  display:grid;
+  grid-template-columns:340px 1fr 280px;
+  gap:14px;
+}
+
+/* ── PANEL ── */
+.panel {
+  background:var(--s1);
+  border:1px solid var(--border);
+  border-radius:10px;overflow:hidden;
+}
+.panel-hdr {
+  padding:11px 14px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.panel-lbl {
+  font-family:'DM Mono',monospace;
+  font-size:.62rem;letter-spacing:2px;color:var(--gray2);
+}
+.panel-badge {
+  font-family:'DM Mono',monospace;
+  font-size:.58rem;color:var(--gray);
+  background:var(--s2);padding:2px 7px;border-radius:3px;
+}
+
+/* ── LEFT: NEWS FEED ── */
+.news-scroll {
+  height:calc(100vh - 210px);
+  overflow-y:auto;
+  scrollbar-width:thin;
+  scrollbar-color:var(--border) transparent;
+}
+.news-scroll::-webkit-scrollbar{width:3px;}
+.news-scroll::-webkit-scrollbar-thumb{background:var(--border2);}
+
+.news-item {
+  padding:13px 14px;
+  border-bottom:1px solid var(--border);
+  cursor:pointer;transition:background .15s;
+  animation:fadeSlide .35s ease;
+  position:relative;
+}
+@keyframes fadeSlide{
+  from{opacity:0;transform:translateY(-6px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.news-item:hover{background:var(--s2);}
+.news-item.active{background:rgba(61,126,245,.07);border-left:2px solid var(--blue);}
+.news-item.fresh{border-left:2px solid var(--green);}
+
+.ni-meta{display:flex;align-items:center;gap:7px;margin-bottom:5px;}
+.ni-src {
+  font-family:'DM Mono',monospace;
+  font-size:.6rem;letter-spacing:1px;
+  color:var(--blue);font-weight:500;
+}
+.ni-time{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--gray);}
+.ni-dot{
+  margin-left:auto;
+  width:5px;height:5px;border-radius:50%;
+}
+.ni-headline{
+  font-size:.8rem;font-weight:500;
+  line-height:1.5;color:var(--white);margin-bottom:7px;
+}
+.ni-tags{display:flex;gap:4px;flex-wrap:wrap;}
+.ni-tag {
+  font-family:'DM Mono',monospace;
+  font-size:.56rem;padding:2px 6px;
+  border-radius:3px;border:1px solid var(--border2);
+  color:var(--gray3);letter-spacing:.5px;
+}
+
+/* ── MIDDLE ── */
+.mid-col{display:flex;flex-direction:column;gap:14px;}
+
+/* prices */
+.price-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:0;
+}
+.price-cell {
+  padding:12px 14px;
+  border-right:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  transition:background .3s;
+  position:relative;overflow:hidden;
+}
+.price-cell:nth-child(4n){border-right:none;}
+.price-cell.affected-cell::after {
+  content:'AFFECTED';
+  position:absolute;top:5px;right:7px;
+  font-family:'DM Mono',monospace;
+  font-size:.5rem;letter-spacing:1px;
+  color:var(--blue);
+  animation:fadeSlide .3s ease;
+}
+.price-cell.flash-g{animation:fG .55s ease;}
+.price-cell.flash-r{animation:fR .55s ease;}
+@keyframes fG{0%,100%{background:transparent}45%{background:rgba(22,199,132,.12)}}
+@keyframes fR{0%,100%{background:transparent}45%{background:rgba(232,64,64,.12)}}
+.pc-name{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:1px;color:var(--gray2);margin-bottom:3px;}
+.pc-val{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:1px;}
+.pc-chg{font-family:'DM Mono',monospace;font-size:.65rem;font-weight:500;}
+.up{color:var(--green);} .down{color:var(--red);} .neut{color:var(--amber);}
+
+/* analysis */
+.analysis-wrap{flex:1;}
+.an-hdr{
+  padding:13px 14px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.an-icon{
+  width:30px;height:30px;border-radius:6px;
+  background:rgba(61,126,245,.15);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.9rem;flex-shrink:0;
+}
+.an-src{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--blue);letter-spacing:1px;}
+.an-hl{font-size:.82rem;font-weight:600;line-height:1.4;margin-top:2px;}
+.an-body{padding:14px;}
+
+.impact-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:8px;margin-bottom:12px;
+}
+.ic{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:7px;padding:10px;transition:all .3s;
+}
+.ic.bull{border-color:rgba(22,199,132,.3);background:rgba(22,199,132,.04);}
+.ic.bear{border-color:rgba(232,64,64,.3);background:rgba(232,64,64,.04);}
+.ic.neut-c{border-color:rgba(245,166,35,.3);background:rgba(245,166,35,.04);}
+.ic-asset{font-family:'DM Mono',monospace;font-size:.65rem;font-weight:500;margin-bottom:3px;}
+.ic-dir{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:2px;}
+.ic-reason{font-size:.65rem;color:var(--gray3);line-height:1.4;}
+.ic-bar{margin-top:6px;height:2px;border-radius:2px;background:var(--border);overflow:hidden;}
+.ic-bar-fill{height:100%;border-radius:2px;transition:width .9s cubic-bezier(.4,0,.2,1);}
+
+/* onchain record */
+.oc-section{
+  margin-top:12px;padding-top:12px;
+  border-top:1px solid var(--border);
+}
+.oc-title{
+  font-family:'DM Mono',monospace;
+  font-size:.6rem;letter-spacing:2px;
+  color:var(--cyan);margin-bottom:8px;
+  display:flex;align-items:center;gap:6px;
+}
+.oc-title::before{content:'⬡';font-size:.75rem;}
+.oc-table{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:6px;padding:8px 10px;
+  font-family:'DM Mono',monospace;
+}
+.oc-row{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:.62rem;padding:3px 0;
+  border-bottom:1px solid rgba(255,255,255,.04);
+}
+.oc-row:last-child{border-bottom:none;}
+.oc-k{color:var(--gray2);}
+.oc-v{color:var(--white);font-weight:500;}
+.oc-v.hash{color:var(--cyan);font-size:.58rem;}
+.oc-v.ok{color:var(--green);}
+
+/* empty */
+.empty{padding:40px 16px;text-align:center;color:var(--gray);}
+.empty-ico{font-size:1.8rem;margin-bottom:10px;opacity:.35;}
+.empty-txt{font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.5px;line-height:1.7;}
+
+/* ── RIGHT: PORTFOLIO ── */
+.right-col{display:flex;flex-direction:column;gap:14px;}
+
+/* portfolio input */
+.port-body{padding:14px;}
+.port-hint{
+  font-family:'DM Mono',monospace;
+  font-size:.62rem;color:var(--gray2);
+  margin-bottom:10px;line-height:1.6;
+}
+.port-asset-row{
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:8px;
+}
+.port-asset-name{
+  font-family:'DM Mono',monospace;
+  font-size:.7rem;color:var(--white);
+  width:72px;flex-shrink:0;
+}
+.port-slider{
+  flex:1;height:3px;
+  appearance:none;background:var(--border2);
+  border-radius:2px;outline:none;cursor:pointer;
+}
+.port-slider::-webkit-slider-thumb{
+  appearance:none;width:12px;height:12px;
+  border-radius:50%;background:var(--blue);
+  cursor:pointer;
+}
+.port-pct{
+  font-family:'DM Mono',monospace;
+  font-size:.68rem;color:var(--blue);
+  width:32px;text-align:right;flex-shrink:0;
+}
+.port-total{
+  font-family:'DM Mono',monospace;
+  font-size:.65rem;
+  padding:7px 10px;border-radius:5px;
+  margin-top:8px;text-align:center;
+  transition:all .3s;
+}
+.port-total.ok{background:rgba(22,199,132,.1);color:var(--green);border:1px solid rgba(22,199,132,.3);}
+.port-total.over{background:rgba(232,64,64,.1);color:var(--red);border:1px solid rgba(232,64,64,.3);}
+
+/* impact result */
+.impact-result{padding:14px;}
+.ir-headline{
+  font-family:'DM Mono',monospace;
+  font-size:.62rem;letter-spacing:1.5px;
+  color:var(--gray2);margin-bottom:10px;
+}
+.ir-total{
+  text-align:center;padding:16px;
+  background:var(--s2);border-radius:8px;
+  margin-bottom:10px;border:1px solid var(--border);
+  transition:all .4s;
+}
+.ir-total-val{
+  font-family:'Syne',sans-serif;
+  font-size:2rem;font-weight:800;
+  margin-bottom:3px;
+}
+.ir-total-label{
+  font-family:'DM Mono',monospace;
+  font-size:.62rem;color:var(--gray2);letter-spacing:1px;
+}
+.ir-breakdown{display:flex;flex-direction:column;gap:5px;}
+.ir-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 10px;border-radius:5px;
+  background:var(--s2);border:1px solid var(--border);
+  font-family:'DM Mono',monospace;font-size:.65rem;
+  transition:all .3s;
+}
+.ir-row.pos{border-color:rgba(22,199,132,.25);background:rgba(22,199,132,.04);}
+.ir-row.neg{border-color:rgba(232,64,64,.25);background:rgba(232,64,64,.04);}
+.ir-asset{color:var(--gray3);}
+.ir-effect{font-weight:500;}
+
+/* tg alert preview */
+.tg-preview{
+  margin:10px 0 0;
+  background:var(--s2);border:1px solid var(--border2);
+  border-radius:8px;padding:10px 12px;
+}
+.tg-title{
+  font-family:'DM Mono',monospace;
+  font-size:.58rem;letter-spacing:1.5px;
+  color:var(--gray2);margin-bottom:6px;
+}
+.tg-bubble{
+  background:#1c2a3a;border-radius:0 8px 8px 8px;
+  padding:9px 11px;font-size:.72rem;line-height:1.6;
+}
+.tg-bubble .tg-src{color:var(--blue);font-weight:600;font-size:.7rem;}
+.tg-bubble .tg-hl{color:var(--white);margin:3px 0;}
+.tg-bubble .tg-impact{font-family:'DM Mono',monospace;font-size:.68rem;}
+
+/* history */
+.hist-list{max-height:220px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.hist-item{
+  display:flex;align-items:center;gap:9px;
+  padding:9px 14px;border-bottom:1px solid var(--border);
+  font-size:.72rem;animation:fadeSlide .3s ease;
+}
+.hist-item:last-child{border-bottom:none;}
+.hist-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.hist-news{flex:1;color:var(--gray3);line-height:1.4;font-size:.7rem;}
+.hist-res{font-family:'DM Mono',monospace;font-size:.6rem;flex-shrink:0;}
+.hist-time{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--gray);flex-shrink:0;}
+
+@media(max-width:1100px){
+  .app{grid-template-columns:300px 1fr;}
+  .right-col{display:none;}
+}
+@media(max-width:760px){
+  .app{grid-template-columns:1fr;}
+  .price-grid{grid-template-columns:repeat(2,1fr);}
+  .impact-grid{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">SIG<span>N</span>AL</div>
+  <div class="nav-center">
+    <span class="nav-tab active">FEED</span>
+    <span class="nav-tab">MARKETS</span>
+    <span class="nav-tab">PORTFOLIO</span>
+  </div>
+  <div class="nav-right">
+    <div class="rialo-badge">BUILT ON RIALO</div>
+    <div class="live-ind">EDGE LIVE</div>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-eyebrow">RIALO EDGE — REAL-TIME NEWS INTELLIGENCE</div>
+  <h1>News happens.<br><em>Know your impact</em><br>instantly.</h1>
+  <p class="hero-sub">Trump tweets, Fed decisions, war headlines — SIGNAL analyzes how every piece of news affects <em>your portfolio</em> in real time, verified on-chain by Rialo. No more manual calculation.</p>
+  <div class="hero-kpis">
+    <div class="kpi"><div class="kpi-val" id="kpiNews">0</div><div class="kpi-label">ANALYZED TODAY</div></div>
+    <div class="kpi"><div class="kpi-val" id="kpiTx">—</div><div class="kpi-label">ON-CHAIN RECORDS</div></div>
+    <div class="kpi"><div class="kpi-val">&lt;500ms</div><div class="kpi-label">ANALYSIS SPEED</div></div>
+    <div class="kpi"><div class="kpi-val">0%</div><div class="kpi-label">MANIPULATION POSSIBLE</div></div>
+  </div>
+</div>
+
+<div class="app">
+
+  <!-- ── LEFT: NEWS FEED ── -->
+  <div class="panel">
+    <div class="panel-hdr">
+      <span class="panel-lbl">// LIVE NEWS FEED</span>
+      <span class="panel-badge" id="newsCount">0 articles</span>
+    </div>
+    <div class="news-scroll" id="newsFeed"></div>
+  </div>
+
+  <!-- ── MIDDLE ── -->
+  <div class="mid-col">
+
+    <!-- prices -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <span class="panel-lbl">// ASSET PRICES — RIALO EDGE</span>
+        <div class="live-ind" style="font-size:.58rem">STREAMING</div>
+      </div>
+      <div class="price-grid" id="priceGrid"></div>
+    </div>
+
+    <!-- analysis -->
+    <div class="panel analysis-wrap" id="analysisPanel">
+      <div class="an-hdr">
+        <div class="an-icon">⚡</div>
+        <div>
+          <div class="an-src">SIGNAL ANALYSIS ENGINE</div>
+          <div class="an-hl" style="color:var(--gray2);font-size:.8rem">Click a news item to analyze</div>
+        </div>
+      </div>
+      <div class="an-body">
+        <div class="empty">
+          <div class="empty-ico">📰</div>
+          <div class="empty-txt">Select a news item on the left.<br>SIGNAL instantly shows which assets<br>are affected — and by how much.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- history -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <span class="panel-lbl">// ON-CHAIN VERIFICATION LOG</span>
+        <span class="panel-badge" id="histCount">0 records</span>
+      </div>
+      <div class="hist-list" id="histList">
+        <div class="empty" style="padding:16px">
+          <div class="empty-txt" style="font-size:.65rem">Analyzed news is recorded on Rialo.<br>Immutable. Verifiable. Tamper-proof.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── RIGHT: PORTFOLIO ── -->
+  <div class="right-col">
+
+    <!-- portfolio setup -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <span class="panel-lbl">// MY PORTFOLIO</span>
+        <span class="panel-badge">Set allocation %</span>
+      </div>
+      <div class="port-body">
+        <div class="port-hint">Set your holdings. SIGNAL calculates how each news event affects <em style="color:var(--white)">your specific portfolio</em> in real time.</div>
+        <div id="portSliders"></div>
+        <div class="port-total" id="portTotal">TOTAL: 0%</div>
+      </div>
+    </div>
+
+    <!-- impact result -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <span class="panel-lbl">// PORTFOLIO IMPACT</span>
+        <span class="live-ind" style="font-size:.58rem" id="impactLive">WAITING</span>
+      </div>
+      <div class="impact-result" id="impactResult">
+        <div class="empty" style="padding:20px">
+          <div class="empty-ico" style="font-size:1.4rem">📊</div>
+          <div class="empty-txt" style="font-size:.65rem">Set your portfolio above,<br>then click a news item<br>to see your personal impact.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── NEWS DATA ──
+const NEWS = [
+  {
+    id:1, src:'REUTERS', time:'Just now', impact:'high', dot:'#E84040',
+    headline:'Trump announces 25% additional tariffs on Chinese goods — effective immediately',
+    tags:['USD','Gold','Nasdaq','CNY'],
+    analysis:[
+      {asset:'USD',    dir:'▲ Bullish', why:'Tariffs → USD demand surge',          type:'bull', str:85},
+      {asset:'Gold',   dir:'▲ Bullish', why:'Uncertainty → safe haven buying',      type:'bull', str:78},
+      {asset:'Nasdaq', dir:'▼ Bearish', why:'Trade war → earnings risk',            type:'bear', str:72},
+      {asset:'CNY',    dir:'▼ Bearish', why:'China exports hit, yuan pressured',    type:'bear', str:80},
+      {asset:'Oil',    dir:'— Neutral', why:'Supply chain impact uncertain',        type:'neut', str:35},
+      {asset:'Bonds',  dir:'▲ Bullish', why:'Risk-off → bond buying',              type:'bull', str:62},
+    ],
+    affects:['USD','GOLD','NDX'],
+    assetMap:{BTC:-.8, ETH:-.6, SOL:-.5, USD:1.2, GOLD:.9, NDX:-.7, OIL:.1, KRW:-.3}
+  },
+  {
+    id:2, src:'BLOOMBERG', time:'4 min ago', impact:'high', dot:'#E84040',
+    headline:'Fed Chair Powell: "Rate cuts premature, inflation target not yet in sight"',
+    tags:['USD','Bonds','Nasdaq','BTC'],
+    analysis:[
+      {asset:'USD',    dir:'▲ Bullish', why:'Higher-for-longer → USD strength',    type:'bull', str:72},
+      {asset:'Bonds',  dir:'▼ Bearish', why:'No cuts → bond price pressure',       type:'bear', str:68},
+      {asset:'Nasdaq', dir:'▼ Bearish', why:'Growth stocks hurt by high rates',    type:'bear', str:74},
+      {asset:'BTC',    dir:'▼ Bearish', why:'Risk-off sentiment',                  type:'bear', str:55},
+      {asset:'Gold',   dir:'▼ Bearish', why:'Strong dollar → gold weakness',       type:'bear', str:50},
+      {asset:'Real Estate',dir:'▼ Bearish',why:'Mortgage rates stay elevated',    type:'bear', str:65},
+    ],
+    affects:['USD','NDX','BTC'],
+    assetMap:{BTC:-1.1, ETH:-.8, SOL:-.9, USD:.8, GOLD:-.4, NDX:-.9, OIL:.1, KRW:.2}
+  },
+  {
+    id:3, src:'COINDESK', time:'9 min ago', impact:'high', dot:'#E84040',
+    headline:'Bitcoin ETF sees record inflows — institutional buying continues for 3rd straight day',
+    tags:['BTC','ETH','SOL','Nasdaq'],
+    analysis:[
+      {asset:'BTC',    dir:'▲ Bullish', why:'ETF demand → direct buy pressure',   type:'bull', str:90},
+      {asset:'ETH',    dir:'▲ Bullish', why:'BTC rally → altcoin follow',         type:'bull', str:74},
+      {asset:'SOL',    dir:'▲ Bullish', why:'Risk-on → alt buying',               type:'bull', str:66},
+      {asset:'Nasdaq', dir:'▲ Bullish', why:'Risk appetite up',                   type:'bull', str:48},
+      {asset:'Gold',   dir:'— Neutral', why:'Limited direct impact',              type:'neut', str:22},
+      {asset:'USD',    dir:'▼ Bearish', why:'Capital rotating into crypto',       type:'bear', str:42},
+    ],
+    affects:['BTC','ETH','SOL'],
+    assetMap:{BTC:2.8, ETH:2.1, SOL:1.8, USD:-.3, GOLD:.1, NDX:.6, OIL:0, KRW:.1}
+  },
+  {
+    id:4, src:'WSJ', time:'15 min ago', impact:'medium', dot:'#F5A623',
+    headline:'OPEC+ extends production cuts by 3 months — 1M barrels/day reduction maintained',
+    tags:['Oil','Energy','USD','Inflation'],
+    analysis:[
+      {asset:'Oil',    dir:'▲ Bullish', why:'Supply cut → price spike',           type:'bull', str:84},
+      {asset:'Energy', dir:'▲ Bullish', why:'Oil up → energy stocks rally',       type:'bull', str:76},
+      {asset:'Inflation',dir:'▲ Rising',why:'Energy costs → CPI pressure',       type:'bear', str:62},
+      {asset:'Airlines',dir:'▼ Bearish',why:'Fuel costs surge',                  type:'bear', str:70},
+      {asset:'USD',    dir:'▲ Bullish', why:'Petrodollar demand up',              type:'bull', str:45},
+      {asset:'Bonds',  dir:'▼ Bearish', why:'Inflation fear → bond selloff',     type:'bear', str:55},
+    ],
+    affects:['OIL','USD'],
+    assetMap:{BTC:.2, ETH:.1, SOL:.1, USD:.4, GOLD:.5, NDX:-.4, OIL:2.1, KRW:-.2}
+  },
+  {
+    id:5, src:'YONHAP', time:'22 min ago', impact:'medium', dot:'#F5A623',
+    headline:'Samsung Q2 operating profit 9T KRW — beats estimates, memory demand strong',
+    tags:['Samsung','KOSPI','KRW','Semiconductors'],
+    analysis:[
+      {asset:'Samsung', dir:'▲ Bullish', why:'Earnings beat → stock surge',       type:'bull', str:92},
+      {asset:'KOSPI',   dir:'▲ Bullish', why:'Large cap lift → index up',         type:'bull', str:64},
+      {asset:'KRW',     dir:'▲ Bullish', why:'Strong earnings → KRW demand',      type:'bull', str:55},
+      {asset:'SK Hynix',dir:'▲ Bullish', why:'Semicon cycle improving',           type:'bull', str:72},
+      {asset:'Nvidia',  dir:'— Neutral', why:'Limited direct impact',             type:'neut', str:28},
+      {asset:'USD',     dir:'▼ Bearish', why:'KRW strength → USD/KRW down',      type:'bear', str:38},
+    ],
+    affects:['KRW','NDX'],
+    assetMap:{BTC:.1, ETH:.1, SOL:.1, USD:-.2, GOLD:0, NDX:.3, OIL:0, KRW:.7}
+  },
+  {
+    id:6, src:'NHK', time:'31 min ago', impact:'low', dot:'#16C784',
+    headline:'Bank of Japan signals possible rate hike — yen strengthens against dollar',
+    tags:['JPY','Nikkei','USD/JPY'],
+    analysis:[
+      {asset:'JPY',    dir:'▲ Bullish', why:'Rate hike signal → yen buying',     type:'bull', str:80},
+      {asset:'Nikkei', dir:'▼ Bearish', why:'Strong yen → exporters hurt',       type:'bear', str:68},
+      {asset:'USD/JPY',dir:'▼ Falling', why:'Yen strength → pair drops',         type:'bear', str:82},
+      {asset:'Toyota', dir:'▼ Bearish', why:'Export competitiveness falls',      type:'bear', str:72},
+      {asset:'Gold',   dir:'— Neutral', why:'Limited direct effect',             type:'neut', str:18},
+      {asset:'JGBs',   dir:'▼ Bearish', why:'Rate hike → JGB selloff',          type:'bear', str:58},
+    ],
+    affects:['USD'],
+    assetMap:{BTC:-.1, ETH:-.1, SOL:-.1, USD:-.5, GOLD:.2, NDX:.1, OIL:0, KRW:.1}
+  },
+];
+
+const PRICES = [
+  {id:'BTC',  name:'BTC/USD',   val:'$68,420', chg:'+3.2%',  up:true },
+  {id:'ETH',  name:'ETH/USD',   val:'$3,815',  chg:'+2.8%',  up:true },
+  {id:'SOL',  name:'SOL/USD',   val:'$184.5',  chg:'+4.1%',  up:true },
+  {id:'USD',  name:'USD/KRW',   val:'1,384',   chg:'+0.8%',  up:true },
+  {id:'GOLD', name:'GOLD/USD',  val:'$2,342',  chg:'+1.1%',  up:true },
+  {id:'NDX',  name:'NASDAQ',    val:'18,256',  chg:'-0.5%',  up:false},
+  {id:'OIL',  name:'OIL/USD',   val:'$82.6',   chg:'+2.0%',  up:true },
+  {id:'KRW',  name:'KOSPI',     val:'2,751',   chg:'+0.4%',  up:true },
+];
+
+const PORT_ASSETS = [
+  {id:'BTC', label:'Bitcoin',  color:'#F7931A'},
+  {id:'ETH', label:'Ethereum', color:'#627EEA'},
+  {id:'SOL', label:'Solana',   color:'#9945FF'},
+  {id:'USD', label:'USD/Stbl', color:'#26A17B'},
+  {id:'GOLD',label:'Gold',     color:'#F5A623'},
+  {id:'NDX', label:'Nasdaq',   color:'#00D4AA'},
+];
+
+let history=[], selectedNews=null, portPct={};
+PORT_ASSETS.forEach(a=>{portPct[a.id]=0;});
+
+// ── INIT ──
+function init(){
+  renderPrices();
+  renderNews();
+  renderPortSliders();
+  animateKPIs();
+  setInterval(tickPrices,3200);
+  setInterval(autoNews,20000);
+}
+
+function animateKPIs(){
+  let n=0;
+  const iv=setInterval(()=>{
+    n+=8; if(n>=312){n=312;clearInterval(iv);}
+    document.getElementById('kpiNews').textContent=n;
+  },18);
+  document.getElementById('kpiTx').textContent='312 txns';
+}
+
+// ── PRICES ──
+function renderPrices(){
+  document.getElementById('priceGrid').innerHTML=PRICES.map(p=>`
+    <div class="price-cell" id="pc-${p.id}">
+      <div class="pc-name">${p.name}</div>
+      <div class="pc-val ${p.up?'up':'down'}">${p.val}</div>
+      <div class="pc-chg ${p.up?'up':'down'}">${p.chg}</div>
+    </div>
+  `).join('');
+}
+
+function tickPrices(){
+  PRICES.forEach(p=>{
+    const el=document.getElementById(`pc-${p.id}`);
+    if(!el)return;
+    const d=(Math.random()-.44)*.25;
+    const prev=parseFloat(p.chg);
+    const nv=prev+d; p.up=nv>=0;
+    p.chg=(nv>=0?'+':'')+nv.toFixed(1)+'%';
+    el.querySelector('.pc-chg').textContent=p.chg;
+    el.querySelector('.pc-chg').className=`pc-chg ${p.up?'up':'down'}`;
+    el.querySelector('.pc-val').className=`pc-val ${p.up?'up':'down'}`;
+  });
+}
+
+function flashAssets(map){
+  Object.entries(map).forEach(([id,effect])=>{
+    const el=document.getElementById(`pc-${id}`);
+    if(!el)return;
+    el.classList.add(effect>0?'flash-g':'flash-r','affected-cell');
+    setTimeout(()=>el.classList.remove('flash-g','flash-r'),600);
+    setTimeout(()=>el.classList.remove('affected-cell'),4000);
+  });
+}
+
+// ── NEWS ──
+function renderNews(){
+  const feed=document.getElementById('newsFeed');
+  feed.innerHTML=NEWS.map((n,i)=>newsHTML(n,i===0)).join('');
+  document.getElementById('newsCount').textContent=`${NEWS.length} articles`;
+  setTimeout(()=>pick(NEWS[0].id),700);
+}
+
+function newsHTML(n,fresh=false){
+  return `
+    <div class="news-item ${fresh?'fresh':''}" id="ni-${n.id}" onclick="pick(${n.id})">
+      <div class="ni-meta">
+        <span class="ni-src">${n.src}</span>
+        <span class="ni-time">${n.time}</span>
+        <div class="ni-dot" style="background:${n.dot};box-shadow:0 0 6px ${n.dot}"></div>
+      </div>
+      <div class="ni-headline">${n.headline}</div>
+      <div class="ni-tags">${n.tags.map(t=>`<span class="ni-tag">${t}</span>`).join('')}</div>
+    </div>
+  `;
+}
+
+// ── PICK NEWS ──
+function pick(id){
+  const news=NEWS.find(n=>n.id===id); if(!news)return;
+  selectedNews=news;
+  document.querySelectorAll('.news-item').forEach(el=>el.classList.remove('active'));
+  const el=document.getElementById(`ni-${news.id}`);
+  if(el)el.classList.add('active');
+  flashAssets(news.assetMap);
+  renderAnalysis(news);
+  renderPortImpact(news);
+  addHistory(news);
+}
+
+// ── ANALYSIS ──
+function renderAnalysis(news){
+  const panel=document.getElementById('analysisPanel');
+  const hash='0x'+[...Array(8)].map(()=>Math.floor(Math.random()*16).toString(16)).join('');
+  const block=(Math.floor(Math.random()*900000)+8100000).toLocaleString();
+  const ts=new Date().toLocaleTimeString('en-US',{hour12:false});
+
+  const cards=news.analysis.map(item=>{
+    const col=item.type==='bull'?'var(--green)':item.type==='bear'?'var(--red)':'var(--amber)';
+    return `
+      <div class="ic ${item.type==='bull'?'bull':item.type==='bear'?'bear':'neut-c'}">
+        <div class="ic-asset" style="color:${col}">${item.asset}</div>
+        <div class="ic-dir" style="color:${col}">${item.dir}</div>
+        <div class="ic-reason">${item.why}</div>
+        <div class="ic-bar"><div class="ic-bar-fill" style="width:0%;background:${col}" data-w="${item.str}%"></div></div>
+      </div>
+    `;
+  }).join('');
+
+  panel.innerHTML=`
+    <div class="an-hdr">
+      <div class="an-icon">⚡</div>
+      <div>
+        <div class="an-src">${news.src} · ${news.time}</div>
+        <div class="an-hl">${news.headline}</div>
+      </div>
+    </div>
+    <div class="an-body">
+      <div class="impact-grid">${cards}</div>
+      <div class="oc-section">
+        <div class="oc-title">RIALO ON-CHAIN RECORD</div>
+        <div class="oc-table">
+          <div class="oc-row"><span class="oc-k">TX HASH</span><span class="oc-v hash">${hash}...4f</span></div>
+          <div class="oc-row"><span class="oc-k">BLOCK</span><span class="oc-v">#${block}</span></div>
+          <div class="oc-row"><span class="oc-k">TIMESTAMP</span><span class="oc-v">${ts} UTC</span></div>
+          <div class="oc-row"><span class="oc-k">STATUS</span><span class="oc-v ok">✓ CONFIRMED</span></div>
+          <div class="oc-row"><span class="oc-k">ENGINE</span><span class="oc-v" style="color:var(--cyan)">Rialo Edge + Reactive Txs</span></div>
+        </div>
+      </div>
+    </div>
+  `;
+  setTimeout(()=>{
+    panel.querySelectorAll('.ic-bar-fill').forEach(b=>{b.style.width=b.dataset.w;});
+  },80);
+}
+
+// ── PORTFOLIO SLIDERS ──
+function renderPortSliders(){
+  document.getElementById('portSliders').innerHTML=PORT_ASSETS.map(a=>`
+    <div class="port-asset-row">
+      <span class="port-asset-name" style="color:${a.color}">${a.label}</span>
+      <input type="range" class="port-slider" min="0" max="100" value="0"
+             id="slider-${a.id}" oninput="updatePort('${a.id}',this.value)" style="accent-color:${a.color}">
+      <span class="port-pct" id="pct-${a.id}" style="color:${a.color}">0%</span>
+    </div>
+  `).join('');
+  updatePortTotal();
+}
+
+function updatePort(id,val){
+  portPct[id]=parseInt(val);
+  document.getElementById(`pct-${id}`).textContent=val+'%';
+  updatePortTotal();
+  if(selectedNews) renderPortImpact(selectedNews);
+}
+
+function updatePortTotal(){
+  const total=Object.values(portPct).reduce((a,b)=>a+b,0);
+  const el=document.getElementById('portTotal');
+  el.textContent=`TOTAL: ${total}%`;
+  el.className=`port-total ${total===100?'ok':'over'}`;
+}
+
+// ── PORTFOLIO IMPACT ──
+function renderPortImpact(news){
+  const el=document.getElementById('impactResult');
+  const liveEl=document.getElementById('impactLive');
+  const total=Object.values(portPct).reduce((a,b)=>a+b,0);
+
+  if(total===0){
+    el.innerHTML=`<div class="empty" style="padding:20px"><div class="empty-ico" style="font-size:1.4rem">📊</div><div class="empty-txt" style="font-size:.65rem">Set your portfolio allocation<br>to see your personal impact.</div></div>`;
+    return;
+  }
+
+  // 각 자산별 영향 계산
+  let netImpact=0;
+  const rows=PORT_ASSETS.filter(a=>portPct[a.id]>0).map(a=>{
+    const baseEffect=news.assetMap[a.id]||0;
+    const weighted=(baseEffect * portPct[a.id])/100;
+    netImpact+=weighted;
+    const sign=baseEffect>=0?'+':'';
+    return {label:a.label,color:a.color,pct:portPct[a.id],effect:baseEffect,weighted,sign};
+  });
+
+  const netSign=netImpact>=0?'+':'';
+  const netColor=netImpact>0?'var(--green)':netImpact<0?'var(--red)':'var(--amber)';
+  const netEmoji=netImpact>0.5?'📈':netImpact<-0.5?'📉':'➡️';
+
+  liveEl.textContent='CALCULATED';
+  liveEl.style.color='var(--green)';
+
+  el.innerHTML=`
+    <div class="ir-headline">ESTIMATED PORTFOLIO IMPACT</div>
+    <div class="ir-total" style="border-color:${netColor}33;background:${netColor}08">
+      <div class="ir-total-val" style="color:${netColor}">${netEmoji} ${netSign}${netImpact.toFixed(2)}%</div>
+      <div class="ir-total-label">NET PORTFOLIO IMPACT</div>
+    </div>
+    <div class="ir-breakdown">
+      ${rows.map(r=>`
+        <div class="ir-row ${r.effect>0?'pos':r.effect<0?'neg':''}">
+          <span class="ir-asset" style="color:${r.color}">${r.label} <span style="color:var(--gray)">(${r.pct}%)</span></span>
+          <span class="ir-effect" style="color:${r.effect>=0?'var(--green)':'var(--red)'}">${r.sign}${r.effect.toFixed(1)}% → ${r.weighted>=0?'+':''}${r.weighted.toFixed(2)}%</span>
+        </div>
+      `).join('')}
+    </div>
+    <div class="tg-preview">
+      <div class="tg-title">📱 TELEGRAM ALERT PREVIEW</div>
+      <div class="tg-bubble">
+        <div class="tg-src">⚡ SIGNAL · ${news.src}</div>
+        <div class="tg-hl">${news.headline.substring(0,60)}...</div>
+        <div class="tg-impact" style="color:${netColor}">Your portfolio: ${netSign}${netImpact.toFixed(2)}% estimated impact</div>
+      </div>
+    </div>
+  `;
+}
+
+// ── HISTORY ──
+function addHistory(news){
+  if(history.find(h=>h.id===news.id))return;
+  history.unshift(news);
+  if(history.length>8)history.pop();
+  const list=document.getElementById('histList');
+  const d=news.analysis[0];
+  const col=d.type==='bull'?'var(--green)':d.type==='bear'?'var(--red)':'var(--amber)';
+  list.innerHTML=history.map(n=>{
+    const dd=n.analysis[0];
+    const c=dd.type==='bull'?'var(--green)':dd.type==='bear'?'var(--red)':'var(--amber)';
+    return `
+      <div class="hist-item">
+        <div class="hist-dot" style="background:${c};box-shadow:0 0 5px ${c}"></div>
+        <div class="hist-news">${n.headline.substring(0,44)}...</div>
+        <div class="hist-res" style="color:${c}">${dd.asset} ${dd.dir.split(' ')[0]}</div>
+        <div class="hist-time">${n.time}</div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('histCount').textContent=`${history.length} records`;
+}
+
+// ── AUTO NEW NEWS ──
+const EXTRA=[
+  {
+    id:99, src:'CNBC', time:'Just now', impact:'high', dot:'#E84040',
+    headline:"Nvidia Q2 earnings crush estimates — data center revenue up 300%, guidance raised",
+    tags:['NVDA','Nasdaq','AMD','AI'],
+    analysis:[
+      {asset:'Nvidia',  dir:'▲ Bullish',why:'Earnings beat → gap up',           type:'bull',str:96},
+      {asset:'Nasdaq',  dir:'▲ Bullish',why:'Mega-cap lift → index rally',      type:'bull',str:72},
+      {asset:'AMD',     dir:'▲ Bullish',why:'AI semicon sector rides wave',     type:'bull',str:62},
+      {asset:'BTC',     dir:'▲ Bullish',why:'Risk-on mood improves',            type:'bull',str:42},
+      {asset:'Gold',    dir:'▼ Bearish',why:'Risk-on → gold outflows',          type:'bear',str:30},
+      {asset:'Bonds',   dir:'▼ Bearish',why:'Equities preferred over bonds',    type:'bear',str:38},
+    ],
+    affects:['NDX','BTC'],
+    assetMap:{BTC:.8,ETH:.6,SOL:.5,USD:.1,GOLD:-.3,NDX:1.4,OIL:.1,KRW:.2}
+  }
+];
+let extraI=0;
+function autoNews(){
+  if(extraI>=EXTRA.length)return;
+  const n=EXTRA[extraI++];
+  n.time='Just now';
+  NEWS.unshift(n);
+  const feed=document.getElementById('newsFeed');
+  const div=document.createElement('div');
+  div.innerHTML=newsHTML(n,true);
+  feed.insertBefore(div.firstElementChild,feed.firstChild);
+  document.getElementById('newsCount').textContent=`${NEWS.length} articles`;
+  setTimeout(()=>pick(n.id),600);
+}
+
+init();
+</script>
+</body>
+</html>
