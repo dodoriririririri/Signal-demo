@@ -428,9 +428,9 @@ nav {
 <nav>
   <div class="logo">SIG<span>N</span>AL</div>
   <div class="nav-center">
-    <span class="nav-tab active">FEED</span>
-    <span class="nav-tab">MARKETS</span>
-    <span class="nav-tab">PORTFOLIO</span>
+    <span class="nav-tab active" onclick="switchTab('feed',this)">FEED</span>
+    <span class="nav-tab" onclick="switchTab('markets',this)">MARKETS</span>
+    <span class="nav-tab" onclick="switchTab('portfolio',this)">PORTFOLIO</span>
   </div>
   <div class="nav-right">
     <div class="rialo-badge">BUILT ON RIALO</div>
@@ -438,6 +438,144 @@ nav {
   </div>
 </nav>
 
+<!-- MARKETS PAGE -->
+<div id="page-markets" style="display:none;position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:80px 1.5rem 60px;">
+  <div style="font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:3px;color:var(--blue);margin-bottom:.8rem;display:flex;align-items:center;gap:10px;">
+    <span style="width:24px;height:1px;background:var(--blue);display:inline-block"></span>
+    RIALO EDGE — LIVE MARKET DATA
+  </div>
+  <h1 style="font-family:'Syne',sans-serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;line-height:1.15;margin-bottom:.75rem;">
+    Markets.<br><em style="font-style:normal;color:var(--blue)">Real-time. On-chain.</em>
+  </h1>
+  <p style="font-size:.875rem;color:var(--gray3);line-height:1.75;max-width:560px;margin-bottom:2rem;">
+    All asset prices are streamed directly on-chain via Rialo Edge. No oracles. No middlemen. Verified by the validator network every block.
+  </p>
+
+  <!-- 자산 카테고리 필터 -->
+  <div style="display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap;">
+    <button onclick="filterMarket('all',this)" style="font-family:'DM Mono',monospace;font-size:.65rem;padding:5px 14px;border-radius:3px;border:1px solid var(--blue);background:var(--blue);color:#fff;cursor:pointer;letter-spacing:1px;">ALL</button>
+    <button onclick="filterMarket('crypto',this)" style="font-family:'DM Mono',monospace;font-size:.65rem;padding:5px 14px;border-radius:3px;border:1px solid var(--border2);background:transparent;color:var(--gray2);cursor:pointer;letter-spacing:1px;">CRYPTO</button>
+    <button onclick="filterMarket('stocks',this)" style="font-family:'DM Mono',monospace;font-size:.65rem;padding:5px 14px;border-radius:3px;border:1px solid var(--border2);background:transparent;color:var(--gray2);cursor:pointer;letter-spacing:1px;">STOCKS</button>
+    <button onclick="filterMarket('forex',this)" style="font-family:'DM Mono',monospace;font-size:.65rem;padding:5px 14px;border-radius:3px;border:1px solid var(--border2);background:transparent;color:var(--gray2);cursor:pointer;letter-spacing:1px;">FOREX</button>
+    <button onclick="filterMarket('commodities',this)" style="font-family:'DM Mono',monospace;font-size:.65rem;padding:5px 14px;border-radius:3px;border:1px solid var(--border2);background:transparent;color:var(--gray2);cursor:pointer;letter-spacing:1px;">COMMODITIES</button>
+  </div>
+
+  <!-- 마켓 테이블 -->
+  <div style="background:var(--s1);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+    <div style="display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 1.5fr;padding:10px 16px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:1.5px;color:var(--gray2);">
+      <span>ASSET</span><span>PRICE</span><span>24H</span><span>7D</span><span>RIALO SIGNAL</span>
+    </div>
+    <div id="marketTable"></div>
+  </div>
+
+  <!-- Rialo Edge 설명 -->
+  <div style="margin-top:2rem;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+    <div style="background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:16px;">
+      <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:2px;color:var(--cyan);margin-bottom:8px;">⬡ RIALO EDGE</div>
+      <div style="font-size:.82rem;font-weight:600;margin-bottom:6px;">Direct API Calls</div>
+      <div style="font-size:.72rem;color:var(--gray3);line-height:1.6;">Smart contracts call external price APIs directly on-chain. No oracle dependency.</div>
+    </div>
+    <div style="background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:16px;">
+      <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:2px;color:var(--green);margin-bottom:8px;">⚡ REACTIVE TXS</div>
+      <div style="font-size:.82rem;font-weight:600;margin-bottom:6px;">Auto-triggered Alerts</div>
+      <div style="font-size:.72rem;color:var(--gray3);line-height:1.6;">Set price conditions. When triggered, on-chain execution happens automatically.</div>
+    </div>
+    <div style="background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:16px;">
+      <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:2px;color:var(--blue);margin-bottom:8px;">🔒 ON-CHAIN RECORD</div>
+      <div style="font-size:.82rem;font-weight:600;margin-bottom:6px;">Tamper-proof History</div>
+      <div style="font-size:.72rem;color:var(--gray3);line-height:1.6;">Every price update is recorded on Rialo. Immutable and verifiable by anyone.</div>
+    </div>
+  </div>
+</div>
+
+<!-- PORTFOLIO PAGE -->
+<div id="page-portfolio" style="display:none;position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:80px 1.5rem 60px;">
+  <div style="font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:3px;color:var(--blue);margin-bottom:.8rem;display:flex;align-items:center;gap:10px;">
+    <span style="width:24px;height:1px;background:var(--blue);display:inline-block"></span>
+    PERSONAL PORTFOLIO TRACKER
+  </div>
+  <h1 style="font-family:'Syne',sans-serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;line-height:1.15;margin-bottom:.75rem;">
+    Your portfolio.<br><em style="font-style:normal;color:var(--blue)">Every news. Instant impact.</em>
+  </h1>
+  <p style="font-size:.875rem;color:var(--gray3);line-height:1.75;max-width:560px;margin-bottom:2.5rem;">
+    Set your holdings once. SIGNAL automatically calculates how every breaking news event affects your specific portfolio in real time — verified on Rialo.
+  </p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+
+    <!-- 포트폴리오 설정 -->
+    <div style="background:var(--s1);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:2px;color:var(--gray2);">// MY HOLDINGS</span>
+        <span id="portTotal2" style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--gray);">TOTAL: 0%</span>
+      </div>
+      <div style="padding:16px;">
+        <p style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--gray2);margin-bottom:14px;line-height:1.6;">Drag sliders to set your portfolio allocation. Must total 100%.</p>
+        <div id="portSliders2"></div>
+        <button onclick="savePortfolio2()" style="width:100%;margin-top:10px;padding:10px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-family:'DM Mono',monospace;font-size:.72rem;letter-spacing:1px;cursor:pointer;font-weight:600;transition:background .2s;" onmouseover="this.style.background='#6B9FFF'" onmouseout="this.style.background='#3D7EF5'">SAVE PORTFOLIO</button>
+        <div id="portSaveMsg2" style="display:none;margin-top:8px;text-align:center;font-family:'DM Mono',monospace;font-size:.65rem;color:var(--green);">✓ Portfolio saved & active</div>
+      </div>
+    </div>
+
+    <!-- 포트폴리오 요약 -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <!-- 총 영향도 -->
+      <div style="background:var(--s1);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);">
+          <span style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:2px;color:var(--gray2);">// LATEST NEWS IMPACT</span>
+        </div>
+        <div style="padding:16px;" id="portImpact2">
+          <div style="text-align:center;color:var(--gray);padding:20px;">
+            <div style="font-size:1.5rem;margin-bottom:8px;opacity:.4;">📊</div>
+            <div style="font-family:'DM Mono',monospace;font-size:.65rem;line-height:1.7;">Set your holdings,<br>then check the FEED tab<br>to see your impact.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 알림 설정 -->
+      <div style="background:var(--s1);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);">
+          <span style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:2px;color:var(--gray2);">// ALERT SETTINGS</span>
+        </div>
+        <div style="padding:16px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;">
+            <span style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--gray3);">Impact &gt; ±2%</span>
+            <div id="toggle1" onclick="toggleAlert(this)" style="width:36px;height:18px;background:var(--green);border-radius:9px;cursor:pointer;position:relative;transition:all .2s;">
+              <div style="position:absolute;right:2px;top:2px;width:14px;height:14px;background:#fff;border-radius:50%;transition:all .2s;"></div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;">
+            <span style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--gray3);">Telegram Alerts</span>
+            <div id="toggle2" onclick="toggleAlert(this)" style="width:36px;height:18px;background:var(--border2);border-radius:9px;cursor:pointer;position:relative;transition:all .2s;">
+              <div style="position:absolute;left:2px;top:2px;width:14px;height:14px;background:#fff;border-radius:50%;transition:all .2s;"></div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;">
+            <span style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--gray3);">On-chain Record</span>
+            <div id="toggle3" onclick="toggleAlert(this)" style="width:36px;height:18px;background:var(--green);border-radius:9px;cursor:pointer;position:relative;transition:all .2s;">
+              <div style="position:absolute;right:2px;top:2px;width:14px;height:14px;background:#fff;border-radius:50%;transition:all .2s;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 히스토리 -->
+  <div style="margin-top:1.5rem;background:var(--s1);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;">
+      <span style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:2px;color:var(--gray2);">// IMPACT HISTORY — ON-CHAIN VERIFIED</span>
+      <span style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--cyan);">⬡ RIALO</span>
+    </div>
+    <div id="portHistory" style="padding:0;">
+      <div style="padding:24px;text-align:center;color:var(--gray);font-family:'DM Mono',monospace;font-size:.65rem;line-height:1.7;">
+        Your portfolio impact history will appear here<br>as you analyze news events.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-feed">
 <div class="hero">
   <div class="hero-eyebrow">RIALO EDGE — REAL-TIME NEWS INTELLIGENCE</div>
   <h1>News happens.<br><em>Know your impact</em><br>instantly.</h1>
@@ -518,6 +656,8 @@ nav {
         <div class="port-hint">Set your holdings. SIGNAL calculates how each news event affects <em style="color:var(--white)">your specific portfolio</em> in real time.</div>
         <div id="portSliders"></div>
         <div class="port-total" id="portTotal">TOTAL: 0%</div>
+        <button onclick="savePortfolio()" style="width:100%;margin-top:10px;padding:10px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-family:'DM Mono',monospace;font-size:.72rem;letter-spacing:1px;cursor:pointer;font-weight:600;transition:background .2s;" onmouseover="this.style.background='#6B9FFF'" onmouseout="this.style.background='#3D7EF5'">SAVE PORTFOLIO</button>
+        <div id="portSaveMsg" style="display:none;margin-top:8px;text-align:center;font-family:'DM Mono',monospace;font-size:.65rem;color:var(--green);">✓ Portfolio saved & active</div>
       </div>
     </div>
 
@@ -538,7 +678,179 @@ nav {
   </div>
 </div>
 
+</div><!-- end page-feed -->
+
 <script>
+// ── TAB SWITCHING ──
+const MARKET_DATA = [
+  {cat:'crypto', name:'Bitcoin',   sym:'BTC',  price:'$68,420', d1:'+3.2%', d7:'+8.5%',  up1:true,  up7:true,  signal:'Strong Buy',  sc:'var(--green)'},
+  {cat:'crypto', name:'Ethereum',  sym:'ETH',  price:'$3,815',  d1:'+2.8%', d7:'+6.1%',  up1:true,  up7:true,  signal:'Buy',          sc:'var(--green)'},
+  {cat:'crypto', name:'Solana',    sym:'SOL',  price:'$184.5',  d1:'+4.1%', d7:'+12.3%', up1:true,  up7:true,  signal:'Strong Buy',  sc:'var(--green)'},
+  {cat:'crypto', name:'Rialo',     sym:'RIALO',price:'Testnet', d1:'+12.5%',d7:'+28.4%', up1:true,  up7:true,  signal:'Watch',        sc:'var(--cyan)'},
+  {cat:'stocks', name:'Apple',     sym:'AAPL', price:'$218.5',  d1:'+4.8%', d7:'+6.2%',  up1:true,  up7:true,  signal:'Buy',          sc:'var(--green)'},
+  {cat:'stocks', name:'Nvidia',    sym:'NVDA', price:'$892.3',  d1:'+6.1%', d7:'+15.4%', up1:true,  up7:true,  signal:'Strong Buy',  sc:'var(--green)'},
+  {cat:'stocks', name:'Tesla',     sym:'TSLA', price:'$248.1',  d1:'-1.2%', d7:'-3.8%',  up1:false, up7:false, signal:'Sell',         sc:'var(--red)'},
+  {cat:'stocks', name:'Samsung',   sym:'005930',price:'₩74,200',d1:'+2.3%',d7:'+4.1%',  up1:true,  up7:true,  signal:'Buy',          sc:'var(--green)'},
+  {cat:'forex',  name:'USD/KRW',   sym:'USDKRW',price:'1,384',  d1:'+0.8%',d7:'+1.2%',  up1:true,  up7:true,  signal:'Neutral',      sc:'var(--amber)'},
+  {cat:'forex',  name:'USD/JPY',   sym:'USDJPY',price:'156.4',  d1:'-0.9%',d7:'-2.1%',  up1:false, up7:false, signal:'Watch',        sc:'var(--cyan)'},
+  {cat:'forex',  name:'EUR/USD',   sym:'EURUSD',price:'1.082',  d1:'-0.3%',d7:'+0.5%',  up1:false, up7:true,  signal:'Neutral',      sc:'var(--amber)'},
+  {cat:'commodities',name:'Gold',  sym:'GOLD', price:'$2,342',  d1:'+1.1%', d7:'+3.2%',  up1:true,  up7:true,  signal:'Buy',          sc:'var(--green)'},
+  {cat:'commodities',name:'Oil',   sym:'WTI',  price:'$82.6',   d1:'+2.0%', d7:'+5.1%',  up1:true,  up7:true,  signal:'Buy',          sc:'var(--green)'},
+  {cat:'commodities',name:'Silver',sym:'XAG',  price:'$29.4',   d1:'+0.8%', d7:'+2.3%',  up1:true,  up7:true,  signal:'Neutral',      sc:'var(--amber)'},
+];
+
+let currentMarketFilter = 'all';
+let portPct2 = {BTC:0,ETH:0,SOL:0,USD:0,GOLD:0,NDX:0};
+let portHistory2 = [];
+
+function switchTab(tab, el) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('page-feed').style.display = tab==='feed' ? 'block' : 'none';
+  document.getElementById('page-markets').style.display = tab==='markets' ? 'block' : 'none';
+  document.getElementById('page-portfolio').style.display = tab==='portfolio' ? 'block' : 'none';
+  if(tab==='markets') renderMarketTable('all');
+  if(tab==='portfolio') renderPortSliders2();
+}
+
+function renderMarketTable(filter) {
+  currentMarketFilter = filter;
+  const data = filter==='all' ? MARKET_DATA : MARKET_DATA.filter(d=>d.cat===filter);
+  const table = document.getElementById('marketTable');
+  table.innerHTML = data.map((d,i) => `
+    <div style="display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 1.5fr;padding:11px 16px;border-bottom:1px solid var(--border);transition:background .15s;${i%2===0?'background:var(--s2)':''}" onmouseover="this.style.background='rgba(61,126,245,.05)'" onmouseout="this.style.background='${i%2===0?'var(--s2)':'transparent'}'">
+      <div>
+        <div style="font-weight:600;font-size:.82rem;">${d.name}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gray2);margin-top:2px;">${d.sym}</div>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:.82rem;font-weight:600;align-self:center;">${d.price}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:.75rem;font-weight:500;color:${d.up1?'var(--green)':'var(--red)'};align-self:center;">${d.d1}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:.75rem;font-weight:500;color:${d.up7?'var(--green)':'var(--red)'};align-self:center;">${d.d7}</div>
+      <div style="align-self:center;">
+        <span style="font-family:'DM Mono',monospace;font-size:.6rem;padding:3px 8px;border-radius:3px;border:1px solid ${d.sc};color:${d.sc};letter-spacing:.5px;">${d.signal}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterMarket(cat, btn) {
+  document.querySelectorAll('#page-markets button').forEach(b => {
+    b.style.background = 'transparent';
+    b.style.color = 'var(--gray2)';
+    b.style.borderColor = 'var(--border2)';
+  });
+  btn.style.background = 'var(--blue)';
+  btn.style.color = '#fff';
+  btn.style.borderColor = 'var(--blue)';
+  renderMarketTable(cat);
+}
+
+function renderPortSliders2() {
+  const PORT_ASSETS2 = [
+    {id:'BTC',  label:'Bitcoin',   color:'#F7931A'},
+    {id:'ETH',  label:'Ethereum',  color:'#627EEA'},
+    {id:'SOL',  label:'Solana',    color:'#9945FF'},
+    {id:'USD',  label:'USD/Stbl',  color:'#26A17B'},
+    {id:'GOLD', label:'Gold',      color:'#F5A623'},
+    {id:'NDX',  label:'Nasdaq',    color:'#00D4AA'},
+  ];
+  const container = document.getElementById('portSliders2');
+  if(!container) return;
+  container.innerHTML = PORT_ASSETS2.map(a => `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <span style="font-family:'DM Mono',monospace;font-size:.7rem;color:${a.color};width:72px;flex-shrink:0;">${a.label}</span>
+      <input type="range" min="0" max="100" value="${portPct2[a.id]||0}"
+             style="flex:1;height:3px;appearance:none;background:var(--border2);border-radius:2px;outline:none;cursor:pointer;accent-color:${a.color};"
+             oninput="updatePort2('${a.id}',this.value)">
+      <span id="pct2-${a.id}" style="font-family:'DM Mono',monospace;font-size:.68rem;color:${a.color};width:32px;text-align:right;">${portPct2[a.id]||0}%</span>
+    </div>
+  `).join('');
+  updatePortTotal2();
+}
+
+function updatePort2(id, val) {
+  portPct2[id] = parseInt(val);
+  const el = document.getElementById(`pct2-${id}`);
+  if(el) el.textContent = val + '%';
+  updatePortTotal2();
+}
+
+function updatePortTotal2() {
+  const total = Object.values(portPct2).reduce((a,b)=>a+b,0);
+  const el = document.getElementById('portTotal2');
+  if(el) {
+    el.textContent = `TOTAL: ${total}%`;
+    el.style.color = total===100 ? 'var(--green)' : total>100 ? 'var(--red)' : 'var(--gray2)';
+  }
+}
+
+function savePortfolio() {
+  const total = Object.values(portPct).reduce((a,b)=>a+b,0);
+  const msg = document.getElementById('portSaveMsg');
+  if(total !== 100) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = '⚠ Total must equal 100%';
+    msg.style.display = 'block';
+    setTimeout(() => msg.style.display='none', 2500);
+    return;
+  }
+  msg.style.color = 'var(--green)';
+  msg.textContent = '✓ Portfolio saved & active';
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display='none', 2500);
+  // 현재 선택된 뉴스가 있으면 즉시 영향도 재계산
+  if(selectedNews) renderPortImpact(selectedNews);
+}
+
+function savePortfolio2() {
+  const total = Object.values(portPct2).reduce((a,b)=>a+b,0);
+  const msg = document.getElementById('portSaveMsg2');
+  if(total !== 100) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = '⚠ Total must equal 100%';
+    msg.style.display = 'block';
+    setTimeout(() => msg.style.display='none', 2500);
+    return;
+  }
+  msg.style.color = 'var(--green)';
+  msg.textContent = '✓ Portfolio saved & active';
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display='none', 2500);
+  // portPct 동기화
+  Object.keys(portPct2).forEach(k => { portPct[k] = portPct2[k]; });
+  // 포트폴리오 히스토리 업데이트
+  const imp2 = document.getElementById('portImpact2');
+  if(imp2 && selectedNews) {
+    const NEWS_MAP = selectedNews.assetMap || {};
+    let net = 0;
+    Object.keys(portPct2).forEach(k => {
+      net += ((NEWS_MAP[k]||0) * portPct2[k]) / 100;
+    });
+    const col = net>0?'var(--green)':net<0?'var(--red)':'var(--amber)';
+    imp2.innerHTML = `
+      <div style="text-align:center;padding:16px;background:${col}08;border:1px solid ${col}33;border-radius:8px;margin:4px;">
+        <div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:${col}">${net>=0?'+':''}${net.toFixed(2)}%</div>
+        <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gray2);margin-top:4px;letter-spacing:1px;">NET PORTFOLIO IMPACT</div>
+        <div style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--gray3);margin-top:8px;line-height:1.5;">${selectedNews.headline.substring(0,50)}...</div>
+      </div>
+    `;
+  }
+}
+
+function toggleAlert(el) {
+  const isOn = el.style.background === 'var(--green)' || el.style.background.includes('16C784');
+  const dot = el.querySelector('div');
+  if(isOn) {
+    el.style.background = 'var(--border2)';
+    dot.style.left = '2px';
+    dot.style.right = 'auto';
+  } else {
+    el.style.background = 'var(--green)';
+    dot.style.right = '2px';
+    dot.style.left = 'auto';
+  }
+}
+
 // ── NEWS DATA ──
 const NEWS = [
   {
