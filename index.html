@@ -594,7 +594,18 @@ nav {
   <div class="panel">
     <div class="panel-hdr">
       <span class="panel-lbl">// LIVE NEWS FEED</span>
-      <span class="panel-badge" id="newsCount">0 articles</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="panel-badge" id="newsCount">0 articles</span>
+        <span style="font-family:'DM Mono',monospace;font-size:.55rem;padding:2px 7px;border-radius:3px;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);color:var(--amber);letter-spacing:.5px;">DEMO DATA</span>
+      </div>
+    </div>
+    <!-- Coming Soon 배너 -->
+    <div style="margin:10px 12px 0;padding:8px 12px;background:rgba(61,126,245,.06);border:1px solid rgba(61,126,245,.2);border-radius:6px;display:flex;align-items:center;gap:8px;">
+      <span style="font-size:.9rem;">🔗</span>
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--blue);letter-spacing:1px;margin-bottom:2px;">COMING SOON</div>
+        <div style="font-size:.68rem;color:var(--gray3);line-height:1.5;">Real-time news will be fetched directly via <span style="color:var(--cyan)">Rialo Edge</span> from Reuters, Bloomberg & CoinDesk APIs. Each article will link to the original source.</div>
+      </div>
     </div>
     <div class="news-scroll" id="newsFeed"></div>
   </div>
@@ -700,7 +711,6 @@ const MARKET_DATA = [
 ];
 
 let currentMarketFilter = 'all';
-let portPct2 = {BTC:0,ETH:0,SOL:0,USD:0,GOLD:0,NDX:0};
 let portHistory2 = [];
 
 function switchTab(tab, el) {
@@ -746,95 +756,138 @@ function filterMarket(cat, btn) {
 }
 
 function renderPortSliders2() {
-  const PORT_ASSETS2 = [
-    {id:'BTC',  label:'Bitcoin',   color:'#F7931A'},
-    {id:'ETH',  label:'Ethereum',  color:'#627EEA'},
-    {id:'SOL',  label:'Solana',    color:'#9945FF'},
-    {id:'USD',  label:'USD/Stbl',  color:'#26A17B'},
-    {id:'GOLD', label:'Gold',      color:'#F5A623'},
-    {id:'NDX',  label:'Nasdaq',    color:'#00D4AA'},
-  ];
   const container = document.getElementById('portSliders2');
   if(!container) return;
-  container.innerHTML = PORT_ASSETS2.map(a => `
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-      <span style="font-family:'DM Mono',monospace;font-size:.7rem;color:${a.color};width:72px;flex-shrink:0;">${a.label}</span>
-      <input type="range" min="0" max="100" value="${portPct2[a.id]||0}"
-             style="flex:1;height:3px;appearance:none;background:var(--border2);border-radius:2px;outline:none;cursor:pointer;accent-color:${a.color};"
-             oninput="updatePort2('${a.id}',this.value)">
-      <span id="pct2-${a.id}" style="font-family:'DM Mono',monospace;font-size:.68rem;color:${a.color};width:32px;text-align:right;">${portPct2[a.id]||0}%</span>
+  container.innerHTML = `
+    <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gray2);margin-bottom:12px;line-height:1.6;">
+      Enter the USD value of each asset.<br>Allocation % is calculated automatically.
     </div>
-  `).join('');
-  updatePortTotal2();
+    ${PORT_ASSETS.map(a=>`
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <span style="font-family:'DM Mono',monospace;font-size:.68rem;color:${a.color};width:72px;flex-shrink:0;">${a.label}</span>
+        <div style="position:relative;flex:1;">
+          <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-family:'DM Mono',monospace;font-size:.68rem;color:var(--gray2);">$</span>
+          <input type="number" min="0" placeholder="0"
+                 id="amt2-${a.id}"
+                 value="${portAmount[a.id]||''}"
+                 oninput="updatePortAmount2('${a.id}', this.value)"
+                 style="width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:5px;padding:7px 8px 7px 20px;font-family:'DM Mono',monospace;font-size:.72rem;color:var(--white);outline:none;transition:border .2s;"
+                 onfocus="this.style.borderColor='${a.color}'"
+                 onblur="this.style.borderColor='var(--border2)'">
+        </div>
+        <span id="pct2-${a.id}" style="font-family:'DM Mono',monospace;font-size:.65rem;color:${a.color};width:36px;text-align:right;flex-shrink:0;">${portPct[a.id]||0}%</span>
+      </div>
+    `).join('')}
+    <div style="margin-top:10px;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:5px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--gray2);">TOTAL VALUE</span>
+      <span id="portTotal2Val" style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--white);">$${Object.values(portAmount).reduce((a,b)=>a+b,0).toLocaleString()}</span>
+    </div>
+  `;
 }
 
-function updatePort2(id, val) {
-  portPct2[id] = parseInt(val);
-  const el = document.getElementById(`pct2-${id}`);
-  if(el) el.textContent = val + '%';
-  updatePortTotal2();
-}
-
-function updatePortTotal2() {
-  const total = Object.values(portPct2).reduce((a,b)=>a+b,0);
-  const el = document.getElementById('portTotal2');
-  if(el) {
-    el.textContent = `TOTAL: ${total}%`;
-    el.style.color = total===100 ? 'var(--green)' : total>100 ? 'var(--red)' : 'var(--gray2)';
-  }
+function updatePortAmount2(id, val){
+  portAmount[id] = parseFloat(val) || 0;
+  const total = Object.values(portAmount).reduce((a,b)=>a+b, 0);
+  PORT_ASSETS.forEach(a=>{
+    const pct = total > 0 ? Math.round((portAmount[a.id]/total)*100) : 0;
+    portPct[a.id] = pct;
+    const el2 = document.getElementById(`pct2-${a.id}`);
+    if(el2) el2.textContent = pct + '%';
+    const el1 = document.getElementById(`pct-${a.id}`);
+    if(el1) el1.textContent = pct + '%';
+    const amt1 = document.getElementById(`amt-${a.id}`);
+    if(amt1) amt1.value = portAmount[a.id] || '';
+  });
+  const totalEl = document.getElementById('portTotal2Val');
+  if(totalEl) totalEl.textContent = '$' + total.toLocaleString();
+  const totalAmt = document.getElementById('portTotalAmt');
+  if(totalAmt) totalAmt.textContent = '$' + total.toLocaleString();
 }
 
 function savePortfolio() {
-  const total = Object.values(portPct).reduce((a,b)=>a+b,0);
+  const total = Object.values(portAmount).reduce((a,b)=>a+b, 0);
   const msg = document.getElementById('portSaveMsg');
-  if(total !== 100) {
+  if(total === 0) {
     msg.style.color = 'var(--red)';
-    msg.textContent = '⚠ Total must equal 100%';
+    msg.textContent = '⚠ Please enter at least one asset amount';
     msg.style.display = 'block';
     setTimeout(() => msg.style.display='none', 2500);
     return;
   }
+  // FEED 탭 portSliders에도 동기화
+  syncPortToFeed();
   msg.style.color = 'var(--green)';
-  msg.textContent = '✓ Portfolio saved & active';
+  msg.textContent = '✓ Portfolio saved & synced to Feed tab';
   msg.style.display = 'block';
   setTimeout(() => msg.style.display='none', 2500);
-  // 현재 선택된 뉴스가 있으면 즉시 영향도 재계산
   if(selectedNews) renderPortImpact(selectedNews);
 }
 
 function savePortfolio2() {
-  const total = Object.values(portPct2).reduce((a,b)=>a+b,0);
+  // PORTFOLIO 탭에서 입력한 금액을 portAmount에 저장
+  PORT_ASSETS.forEach(a => {
+    const el = document.getElementById(`amt2-${a.id}`);
+    if(el) portAmount[a.id] = parseFloat(el.value) || 0;
+  });
+  const total = Object.values(portAmount).reduce((a,b)=>a+b, 0);
   const msg = document.getElementById('portSaveMsg2');
-  if(total !== 100) {
+  if(total === 0) {
     msg.style.color = 'var(--red)';
-    msg.textContent = '⚠ Total must equal 100%';
+    msg.textContent = '⚠ Please enter at least one asset amount';
     msg.style.display = 'block';
     setTimeout(() => msg.style.display='none', 2500);
     return;
   }
+  recalcPortPct();
+  // FEED 탭 동기화
+  syncPortToFeed();
   msg.style.color = 'var(--green)';
-  msg.textContent = '✓ Portfolio saved & active';
+  msg.textContent = '✓ Saved & synced to Feed tab ✓';
   msg.style.display = 'block';
   setTimeout(() => msg.style.display='none', 2500);
-  // portPct 동기화
-  Object.keys(portPct2).forEach(k => { portPct[k] = portPct2[k]; });
-  // 포트폴리오 히스토리 업데이트
+  // PORTFOLIO 탭 impact 업데이트
+  updatePortImpact2();
+}
+
+function syncPortToFeed(){
+  // FEED 탭 입력창에 금액 반영
+  PORT_ASSETS.forEach(a => {
+    const el = document.getElementById(`amt-${a.id}`);
+    if(el) el.value = portAmount[a.id] || '';
+  });
+  recalcPortPct();
+  if(selectedNews) renderPortImpact(selectedNews);
+}
+
+function updatePortImpact2(){
   const imp2 = document.getElementById('portImpact2');
-  if(imp2 && selectedNews) {
-    const NEWS_MAP = selectedNews.assetMap || {};
-    let net = 0;
-    Object.keys(portPct2).forEach(k => {
-      net += ((NEWS_MAP[k]||0) * portPct2[k]) / 100;
-    });
-    const col = net>0?'var(--green)':net<0?'var(--red)':'var(--amber)';
-    imp2.innerHTML = `
-      <div style="text-align:center;padding:16px;background:${col}08;border:1px solid ${col}33;border-radius:8px;margin:4px;">
-        <div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:${col}">${net>=0?'+':''}${net.toFixed(2)}%</div>
-        <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gray2);margin-top:4px;letter-spacing:1px;">NET PORTFOLIO IMPACT</div>
-        <div style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--gray3);margin-top:8px;line-height:1.5;">${selectedNews.headline.substring(0,50)}...</div>
+  if(!imp2 || !selectedNews) return;
+  const total = Object.values(portAmount).reduce((a,b)=>a+b,0);
+  if(total === 0) return;
+  let net = 0;
+  PORT_ASSETS.forEach(a => {
+    const pct = portPct[a.id] || 0;
+    const effect = selectedNews.assetMap[a.id] || 0;
+    net += (effect * pct) / 100;
+  });
+  const col = net>0?'var(--green)':net<0?'var(--red)':'var(--amber)';
+  const emoji = net>0.5?'📈':net<-0.5?'📉':'➡️';
+  imp2.innerHTML = `
+    <div style="text-align:center;padding:16px;background:${col}08;border:1px solid ${col}33;border-radius:8px;margin:4px;">
+      <div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:${col}">${emoji} ${net>=0?'+':''}${net.toFixed(2)}%</div>
+      <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gray2);margin-top:4px;letter-spacing:1px;">NET PORTFOLIO IMPACT</div>
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:4px;">
+        ${PORT_ASSETS.filter(a=>portAmount[a.id]>0).map(a=>{
+          const eff = selectedNews.assetMap[a.id]||0;
+          const w = (eff*portPct[a.id])/100;
+          return `<div style="display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:.6rem;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05);">
+            <span style="color:${a.color}">${a.label} (${portPct[a.id]}%)</span>
+            <span style="color:${eff>=0?'var(--green)':'var(--red)'}">${eff>=0?'+':''}${eff.toFixed(1)}% → ${w>=0?'+':''}${w.toFixed(2)}%</span>
+          </div>`;
+        }).join('')}
       </div>
-    `;
-  }
+    </div>
+  `;
 }
 
 function toggleAlert(el) {
@@ -1039,7 +1092,10 @@ function newsHTML(n,fresh=false){
         <div class="ni-dot" style="background:${n.dot};box-shadow:0 0 6px ${n.dot}"></div>
       </div>
       <div class="ni-headline">${n.headline}</div>
-      <div class="ni-tags">${n.tags.map(t=>`<span class="ni-tag">${t}</span>`).join('')}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+        <div class="ni-tags">${n.tags.map(t=>`<span class="ni-tag">${t}</span>`).join('')}</div>
+        <span style="font-family:'DM Mono',monospace;font-size:.55rem;color:var(--gray);border:1px solid var(--border);padding:2px 7px;border-radius:3px;white-space:nowrap;opacity:.6;cursor:default;" title="Real article links coming soon — Rialo Edge will fetch live news from original sources">🔗 Read Original · Soon</span>
+      </div>
     </div>
   `;
 }
@@ -1103,31 +1159,65 @@ function renderAnalysis(news){
   },80);
 }
 
-// ── PORTFOLIO SLIDERS ──
+// ── 자산 보유량 (금액 기준) ──
+let portAmount = {};
+PORT_ASSETS.forEach(a=>{ portAmount[a.id] = 0; });
+
+// ── PORTFOLIO 금액 입력 렌더 (FEED 탭 오른쪽) ──
 function renderPortSliders(){
-  document.getElementById('portSliders').innerHTML=PORT_ASSETS.map(a=>`
-    <div class="port-asset-row">
-      <span class="port-asset-name" style="color:${a.color}">${a.label}</span>
-      <input type="range" class="port-slider" min="0" max="100" value="0"
-             id="slider-${a.id}" oninput="updatePort('${a.id}',this.value)" style="accent-color:${a.color}">
-      <span class="port-pct" id="pct-${a.id}" style="color:${a.color}">0%</span>
+  document.getElementById('portSliders').innerHTML = `
+    <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gray2);margin-bottom:10px;line-height:1.6;">
+      Enter the USD value of each asset you hold.<br>Percentages are calculated automatically.
     </div>
-  `).join('');
-  updatePortTotal();
+    ${PORT_ASSETS.map(a=>`
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span style="font-family:'DM Mono',monospace;font-size:.68rem;color:${a.color};width:68px;flex-shrink:0;">${a.label}</span>
+        <div style="position:relative;flex:1;">
+          <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-family:'DM Mono',monospace;font-size:.68rem;color:var(--gray2);">$</span>
+          <input type="number" min="0" placeholder="0"
+                 id="amt-${a.id}"
+                 value="${portAmount[a.id]||''}"
+                 oninput="updatePortAmount('${a.id}', this.value)"
+                 style="width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:5px;padding:6px 8px 6px 20px;font-family:'DM Mono',monospace;font-size:.72rem;color:var(--white);outline:none;transition:border .2s;"
+                 onfocus="this.style.borderColor='${a.color}'"
+                 onblur="this.style.borderColor='var(--border2)'">
+        </div>
+        <span id="pct-${a.id}" style="font-family:'DM Mono',monospace;font-size:.65rem;color:${a.color};width:36px;text-align:right;flex-shrink:0;">0%</span>
+      </div>
+    `).join('')}
+    <div style="margin-top:10px;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:5px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--gray2);">TOTAL</span>
+      <span id="portTotalAmt" style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--white);">$0</span>
+    </div>
+  `;
+  recalcPortPct();
 }
 
-function updatePort(id,val){
-  portPct[id]=parseInt(val);
-  document.getElementById(`pct-${id}`).textContent=val+'%';
-  updatePortTotal();
+function updatePortAmount(id, val){
+  portAmount[id] = parseFloat(val) || 0;
+  recalcPortPct();
   if(selectedNews) renderPortImpact(selectedNews);
 }
 
+function recalcPortPct(){
+  const total = Object.values(portAmount).reduce((a,b)=>a+b, 0);
+  PORT_ASSETS.forEach(a=>{
+    const pct = total > 0 ? Math.round((portAmount[a.id] / total) * 100) : 0;
+    portPct[a.id] = pct;
+    const el = document.getElementById(`pct-${a.id}`);
+    if(el) el.textContent = pct + '%';
+  });
+  const totalEl = document.getElementById('portTotalAmt');
+  if(totalEl) totalEl.textContent = '$' + total.toLocaleString();
+  const oldEl = document.getElementById('portTotal');
+  if(oldEl){
+    oldEl.textContent = total > 0 ? `TOTAL: $${total.toLocaleString()}` : 'TOTAL: $0';
+    oldEl.className = `port-total ${total > 0 ? 'ok' : 'over'}`;
+  }
+}
+
 function updatePortTotal(){
-  const total=Object.values(portPct).reduce((a,b)=>a+b,0);
-  const el=document.getElementById('portTotal');
-  el.textContent=`TOTAL: ${total}%`;
-  el.className=`port-total ${total===100?'ok':'over'}`;
+  recalcPortPct();
 }
 
 // ── PORTFOLIO IMPACT ──
